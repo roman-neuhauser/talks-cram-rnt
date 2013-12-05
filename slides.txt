@@ -1,0 +1,300 @@
+###############################
+Testing command line interfaces
+###############################
+
+:Author: Roman Neuhauser <rneuhauser@suse.cz>
+
+.. footer:: Testing commandline interfaces with `Cram` or `rnt`
+
+Testing command line interfaces
+===============================
+
+Roman Neuhauser <rneuhauser@suse.cz>
+
+Testing commandline interfaces with `Cram` or `rnt`
+
+Cram
+====
+
+.. class:: incremental
+
+* functional testing framework
+* derived from tests for Mercurial
+* tests look like snippets of interactive shell sessions
+* literate testing
+
+Hello Cram
+==========
+
+.. class:: incremental
+
+  ::
+
+    % cat echo.t
+
+    echo(1) will print its arguments,
+    followed by a newline
+
+      $ echo "hello world"  goodbye  world
+      hello world goodbye world
+
+  ::
+
+    % cram echo.t
+    .
+    # Ran 1 tests, 0 skipped, 0 failed.
+
+
+Hello? Cram?
+============
+
+::
+
+  % cat echo-empty.t; echo XXX
+  echo(1) with no arguments will print a newline
+
+    $ echo
+
+  XXX
+
+
+Oh Noes...
+==========
+
+::
+
+  % cram echo-empty.t
+  !
+  --- echo-empty.t
+  +++ echo-empty.t.err
+  @@ -1,4 +1,5 @@
+  echo(1) with no arguments will print a newline
+  
+    $ echo
+  +  
+  
+
+  # Ran 1 tests, 0 skipped, 1 failed.
+
+
+Hello! Cram!
+============
+
+::
+
+  % cram -i echo-empty.t 
+  !
+  --- echo-empty.t
+  +++ echo-empty.t.err
+  @@ -1,4 +1,5 @@
+  echo(1) with no arguments will print a newline
+  
+    $ echo
+  +  
+  
+  Accept this change? [yN]
+
+
+Multiline commands
+==================
+
+::
+
+  % cat test-e.t
+  test -e is true for an existing filesystem object
+
+    $ f=guard
+    $ touch $f
+    $ if test -e $f; then
+    >   echo "$f exists"
+    > else
+    >   echo "$f is missing"
+    > fi
+    guard exists
+
+
+Multiline commands
+==================
+
+::
+
+  % cram test-e.t 
+  .
+  # Ran 1 tests, 0 skipped, 0 failed.
+
+
+Unstable outputs...
+===================
+
+* current date
+* filesystem paths
+* ...
+
+... not a problem
+=================
+
+.. class:: incremental
+
+  lines ending with " (glob)"
+
+  lines ending with " (re)"
+
+Benefits?
+=========
+
+* extremely easy to pick up
+* readable *and* runnable bug reports
+* reStructuredText-compatible
+
+Cramex
+======
+
+https://github.com/roman-neuhauser/cramex
+
+rnt
+===
+
+https://github.com/roman-neuhauser/rnt
+
+.. class:: incremental
+
+* functional testing framework
+* two POSIX-shell scripts, 118LoC
+* simplicity of implementation dominates features
+* tests are directories with a prescribed structure
+
+
+Used in...
+==========
+
+* https://github.com/roman-neuhauser/rnt
+* https://github.com/roman-neuhauser/logdemux
+* https://github.com/roman-neuhauser/pastish
+* https://github.com/roman-neuhauser/bs-update
+* https://github.com/roman-neuhauser/iniphile
+
+
+Hello rnt
+=========
+
+.. class:: incremental
+
+  ::
+
+    % ls -1 100-echo
+    README
+    cmd
+    err.expected
+    exit.expected
+    out.expected
+
+  ::
+
+    % cat 100-echo/cmd
+    echo "hello world"  goodbye  world
+
+
+Hello rnt
+=========
+
+::
+
+  % sh run-tests.sh .
+
+  tests: 1 failed: 0
+
+Oh Noes...
+==========
+
+::
+
+  % sh run-tests.sh .
+  F
+
+  FAIL ./100-echo
+
+  # echo(1) will print its arguments,
+  # followed by a newline
+
+  --- ./100-echo/exit.expected
+  +++ ./100-echo/exit.actual
+  @@ -0,0 +1 @@
+  +0
+
+  tests: 1 failed: 1
+
+
+Wiring it in
+============
+
+::
+
+  % ls tests
+  000-usage                       410-two-args
+  100-noarg                       450-dotfile
+  110-foreign-option              500-rewrite
+  150-option-bsapi-no-optarg      510-upgrade
+  160-option-bsproject-no-optarg  520-firstball
+  170-option-dloadurl-no-optarg   530-checkout-failure
+  180-option-bspackage-no-optarg  540-fetch-failure
+  190-option-tarball-no-optarg    550-repack-failure
+  200-option-commitmsg-no-optarg  560-update-tarball-failure
+  210-option-specfile-no-optarg   570-update-specfile-failure
+  290-option-dryrun               580-tarball-hook-failure
+  300-no-option-package           590-tarball-hook-success
+  310-no-option-project           600-version-hook-failure
+  320-no-option-tarball           610-version-hook-success
+  330-no-option-dloadurl          620-build-failure
+  340-no-option-commit-msg        630-build-success
+  350-no-option-specfile          640-option-nocommit
+  400-notag                       fakes
+
+
+Wiring it in
+============
+
+::
+
+  % grep -A2 ^check GNUmakefile
+  check: all
+          SHELL=$(SHELL) $(SHELL) rnt/run-tests.sh \
+            tests $$PWD/bs-update
+
+
+Hello! rnt!
+===========
+
+updating ``*.expected`` from ``*.actual`` in the works 
+
+
+Multi-command `cmd`
+===================
+
+.. class:: incremental
+
+* possible, `rnt` does nothing special with ``cmd``
+* bailout-on-error provided by the user
+* ``exit.expected`` reflects overall exitcode
+
+
+Unstable outputs...
+===================
+
+* current date
+* filesystem paths
+* ...
+
+... a problem
+=============
+
+compares ``*.expected`` vs. ``*.actual`` with `diff(1)`
+
+
+Benefits?
+=========
+
+* next-to-no dependencies
+* quite easy to pick up
+* fixed structure of a testcase
+* pushes towards orthogonality
+

@@ -1,0 +1,31 @@
+Cram
+====
+
+* "  $ " lines are run in the shell.
+
+* "  > " lines allow multi-line commands.
+
+* All other lines beginning with two spaces are command output.
+
+* Output lines *ending* with " (re)" are matched as Perl-compatible regexps.
+
+* Lines ending with " (glob)" are matched with a glob-like syntax.
+  The only special characters supported are * and ?.
+  Both characters can be escaped using \, and the backslash can be
+  escaped itself.
+
+* Output lines ending with either of the above keywords are always
+  first matched literally with actual command output.
+
+* Lines ending with " (no-eol)" will match actual output that doesn't
+  end in a newline.
+
+* Actual output lines containing unprintable characters are escaped
+  and suffixed with " (esc)". Lines matching unprintable output must
+  also contain the keyword.
+
+* Anything else is a comment.
+
+* test files use the .t file extension.
+
+
